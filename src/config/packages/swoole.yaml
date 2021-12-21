@@ -1,4 +1,7 @@
 swoole:
   http_server:
     settings:
-      worker_count: 25
+      worker_count: 10
+      worker_max_request_grace: 100
+      package_max_length: 838860800
+      task_worker_count: 10

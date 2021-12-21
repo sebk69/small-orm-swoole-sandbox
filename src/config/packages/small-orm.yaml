@@ -1,0 +1,17 @@
+sebk_small_orm:
+  connections:
+    default:
+      type: swoole-mysql
+      host: db
+      database: test
+      encoding: utf8
+      user:     root
+      password: dev
+
+  bundles:
+    TestBundle:
+      connections:
+        default:
+          dao_namespace: App\TestBundle\Dao
+          model_namespace: App\TestBundle\Model
+          validator_namespace: App\TestBundle\Validator

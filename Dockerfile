@@ -1,4 +1,4 @@
-FROM php:8.0-cli
+FROM php:7.4-cli
 
 # args
 ARG work_user=www-data
@@ -6,11 +6,14 @@ ARG uid
 ARG timezone
 
 # install swoole
-RUN pecl install swoole
-RUN docker-php-ext-enable swoole
+RUN pecl install openswoole
+RUN docker-php-ext-enable openswoole
+
+# install mysql
+RUN docker-php-ext-install pdo pdo_mysql && docker-php-ext-enable pdo pdo_mysql
 
 # No memory limit
-RUN cd /usr/local/etc/php/conf.d/ && echo 'memory_limit = -1' >> /usr/local/etc/php/conf.d/docker-php-ram-limit.ini
+RUN cd /usr/local/etc/php/conf.d/ && echo 'memory_limit = 500M' >> /usr/local/etc/php/conf.d/docker-php-ram-limit.ini
 
 # Install composer
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"

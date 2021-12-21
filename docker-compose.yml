@@ -1,4 +1,4 @@
-version: "3.6"
+version: "3.5"
 
 services:
   app:
@@ -17,6 +17,7 @@ services:
       MONOLOG_MAIN_STREAM_PATH: php://stdout
       MONOLOG_DEPRECATIONS_STREAM_PATH: php://sterr
       SWOOLE_LOG_STREAM_PATH: /proc/self/fd/1
+      DATABASE_URL: "mysql://root:dev@db:3306/test?serverVersion=8.0"
       #API_HOST: 0.0.0.0
       #API_PORT: 9200
     ports:
@@ -24,3 +25,14 @@ services:
       #- 9200:9200
     volumes:
       - ./src:/usr/src/app
+  db:
+    image: mysql:8
+    container_name: swoole-test-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=dev
+    ports:
+      - "3306:3306"
+      - "33060:22060"
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - ./my.cnf:/etc/mysql/conf.d/custom.cnf
