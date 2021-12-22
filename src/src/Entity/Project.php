@@ -5,7 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Project
+ * Resource
  *
  * @ORM\Table(name="project", indexes={@ORM\Index(name="fk_project_1_idx", columns={"user_id"})})
  * @ORM\Entity(repositoryClass="App\Repository\ProjectRepository")

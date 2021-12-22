@@ -9,8 +9,12 @@ ARG timezone
 RUN pecl install openswoole
 RUN docker-php-ext-enable openswoole
 
+# install redis
+RUN pecl install redis
+RUN docker-php-ext-enable redis
+
 # install mysql
-RUN docker-php-ext-install pdo pdo_mysql && docker-php-ext-enable pdo pdo_mysql
+RUN docker-php-ext-install pdo pdo_mysql
 
 # No memory limit
 RUN cd /usr/local/etc/php/conf.d/ && echo 'memory_limit = 500M' >> /usr/local/etc/php/conf.d/docker-php-ram-limit.ini

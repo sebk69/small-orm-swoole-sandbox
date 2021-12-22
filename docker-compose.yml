@@ -36,3 +36,8 @@ services:
     volumes:
       - ./data/mysql:/var/lib/mysql
       - ./my.cnf:/etc/mysql/conf.d/custom.cnf
+  redis:
+    image: redis:6.2
+    container_name: swoole-test-redis
+    ports:
+      - "6379:6379"

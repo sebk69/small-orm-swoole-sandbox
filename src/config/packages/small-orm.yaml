@@ -7,6 +7,13 @@ sebk_small_orm:
       encoding: utf8
       user:     root
       password: dev
+    redis:
+      type: swoole-redis
+      host: redis
+      database: "not-used"
+      encoding: "not-used"
+      user:     "not-used"
+      password: "not-used"
 
   bundles:
     TestBundle:
@@ -15,3 +22,9 @@ sebk_small_orm:
           dao_namespace: App\TestBundle\Dao
           model_namespace: App\TestBundle\Model
           validator_namespace: App\TestBundle\Validator
+    RedisBundle:
+      connections:
+        redis:
+          dao_namespace: App\RedisBundle\Dao
+          model_namespace: App\RedisBundle\Model
+          validator_namespace: App\RedisBundle\Validator

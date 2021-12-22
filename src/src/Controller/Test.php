@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Project;
 use App\Entity\User;
+use App\RedisBundle\Dao\Resource;
 use Doctrine\Persistence\ManagerRegistry;
 use Sebk\SmallOrmCore\Dao\DaoEmptyException;
 use Sebk\SmallOrmCore\Dao\PersistThread;
@@ -30,7 +31,7 @@ class Test extends AbstractController
     public function multiPersist(Dao $daoFactory)
     {
         // Get dao
-        $dao = $daoFactory->get("TestBundle", "Project");
+        $dao = $daoFactory->get("TestBundle", "Resource");
 
         // Get projects
         $result = $dao->findBy([]);
@@ -65,10 +66,7 @@ class Test extends AbstractController
     public function createProject($name, Dao $daoFactory)
     {
         // Get dao
-        $dao = $daoFactory->get("TestBundle", "Project");
-
-        // Create thread
-        $thread = new PersistThread($dao->getConnection());
+        $dao = $daoFactory->get("TestBundle", "Resource");
 
         // Create user if not exists
         try {
@@ -80,22 +78,33 @@ class Test extends AbstractController
             $user->persist();
         }
 
+        // Create thread
+        $thread = new PersistThread($dao->getConnection());
+
         // Create 100 projects for user
         $thread->startTransaction();
+        $thread->setFlushOnInsert();
+        $models = [];
         for($i = 0; $i < 100; $i++) {
-            /** @var \App\TestBundle\Model\Project $model */
+            /** @var \App\TestBundle\Model\Resource $model */
             $model = $dao->newModel();
             $model->setUserId(1);
             $model->setName($name . " " . rand(1, 10000));
             $thread->pushPersist($model);
+            $models[] = $model;
         }
         $thread->commit();
+
+        foreach ($models as $model) {
+            $model->setName($model->getName() . " persisted");
+            $model->persist();
+        }
 
         // Close connection
         $thread->close();
 
         // Return last project
-        return new JsonResponse($model);
+        return new JsonResponse($models);
     }
 
     /**
@@ -111,7 +120,7 @@ class Test extends AbstractController
     public function deleteProjects(Dao $daoFactory)
     {
         // Get dao
-        $dao = $daoFactory->get("TestBundle", "Project");
+        $dao = $daoFactory->get("TestBundle", "Resource");
 
         // Get all projects
         $projects = $dao->findBy([]);
@@ -121,7 +130,7 @@ class Test extends AbstractController
 
         // Delete all
         foreach($projects as $project) {
-            /** @var \App\TestBundle\Model\Project $model */
+            /** @var \App\TestBundle\Model\Resource $model */
             $thread->pushDelete($project);
         }
 
@@ -146,7 +155,7 @@ class Test extends AbstractController
     public function unitMultiPersist($name, Dao $daoFactory)
     {
         // Get dao
-        $dao = $daoFactory->get("TestBundle", "Project");
+        $dao = $daoFactory->get("TestBundle", "Resource");
 
         // Get all projects
         $projects = $dao->findBy([]);
@@ -173,8 +182,8 @@ class Test extends AbstractController
      */
     public function persistWithPagination(Dao $daoFactory)
     {
-        /** @var \App\TestBundle\Dao\Project $dao */
-        $dao = $daoFactory->get("TestBundle", "Project");
+        /** @var \App\TestBundle\Dao\Resource $dao */
+        $dao = $daoFactory->get("TestBundle", "Resource");
 
         $page = 1;
         $thread = new PersistThread($dao->getConnection());
@@ -210,6 +219,67 @@ class Test extends AbstractController
         });
 
         return new Response("That's done !");
+    }
+
+    /**
+     * @Route("/redisPersist")
+     * @param Dao $daoFactory
+     * @return mixed
+     * @throws \ReflectionException
+     * @throws \Sebk\SmallOrmCore\Factory\ConfigurationException
+     * @throws \Sebk\SmallOrmCore\Factory\DaoNotFoundException
+     */
+    public function redisPersist(Dao $daoFactory)
+    {
+        /** @var Resource $dao */
+        $dao = $daoFactory->get("RedisBundle", "Resource");
+
+        for ($i = 0; $i < 100; $i++) {
+            $model = $dao->newModel();
+            $model->setId($i);
+            $model->setName("Resource" . $i);
+            $model->persist();
+        }
+
+        return new JsonResponse($model);
+    }
+
+    /**
+     * @Route("/redisGet")
+     * @param Dao $daoFactory
+     * @return mixed
+     * @throws \ReflectionException
+     * @throws \Sebk\SmallOrmCore\Factory\ConfigurationException
+     * @throws \Sebk\SmallOrmCore\Factory\DaoNotFoundException
+     */
+    public function redisGet(Dao $daoFactory)
+    {
+        /** @var Resource $dao */
+        $dao = $daoFactory->get("RedisBundle", "Resource");
+
+        $models = $dao->findBy(range(0, 99));
+
+        return new JsonResponse($models);
+    }
+
+    /**
+     * @Route("/redisDel")
+     * @param Dao $daoFactory
+     * @return mixed
+     * @throws \ReflectionException
+     * @throws \Sebk\SmallOrmCore\Factory\ConfigurationException
+     * @throws \Sebk\SmallOrmCore\Factory\DaoNotFoundException
+     */
+    public function redisDel(Dao $daoFactory)
+    {
+        /** @var Resource $dao */
+        $dao = $daoFactory->get("RedisBundle", "Resource");
+
+        for($i = 0; $i < 100; $i++) {
+            $dao->getResult($dao->createDeleteBuilder()->del($i));
+        }
+
+        return new JsonResponse();
     }
 
     /**
@@ -320,7 +390,7 @@ class Test extends AbstractController
 
         // Delete all
         foreach($projects as $project) {
-            /** @var \App\TestBundle\Model\Project $model */
+            /** @var \App\TestBundle\Model\Resource $model */
             $managerRegistry->getManager()->remove($project);
         }
 
@@ -370,7 +440,7 @@ class Test extends AbstractController
      */
     public function persistWithPaginationDoctrine(ManagerRegistry $managerRegistry)
     {
-        /** @var \App\TestBundle\Dao\Project $dao */
+        /** @var \App\TestBundle\Dao\Resource $dao */
         $repo = $managerRegistry->getRepository(Project::class);
 
         $page = 1;
@@ -394,7 +464,7 @@ class Test extends AbstractController
      */
     public function massFindOneDoctrine(ManagerRegistry $managerRegistry)
     {
-        /** @var \App\TestBundle\Dao\Project $dao */
+        /** @var \App\TestBundle\Dao\Resource $dao */
         $repo = $managerRegistry->getRepository(User::class);
 
         for($i = 0; $i < 1000; $i++) {
