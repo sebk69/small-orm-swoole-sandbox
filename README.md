@@ -2,7 +2,7 @@
 
 ## purpose
 
-This is a testing app to test Small Orm Swoole Connector
+This is a Symfony testing app to test Small Orm Swoole Connector
 
 ## Install
 
