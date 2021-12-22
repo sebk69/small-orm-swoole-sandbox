@@ -31,6 +31,9 @@ Here are routes :
   app_test_unitmultipersist                ANY      ANY      ANY    /unitMultiPersist/{name}           
   app_test_persistwithpagination           ANY      ANY      ANY    /persistWithPagination             
   app_test_massfindone                     ANY      ANY      ANY    /massFindOne                       
+  app_test_redispersist                    ANY      ANY      ANY    /redisPersist                      
+  app_test_redisget                        ANY      ANY      ANY    /redisGet                          
+  app_test_redisdel                        ANY      ANY      ANY    /redisDel                          
   app_test_multipersistdoctrine            ANY      ANY      ANY    /doctrine/multiPersist             
   app_test_createprojectdoctrine           ANY      ANY      ANY    /doctrine/createProject/{name}     
   app_test_deleteprojectsdoctrine          ANY      ANY      ANY    /doctrine/deleteProjects           
@@ -52,4 +55,7 @@ This is an average time for 100 tests in same conditions and swoole instance.
 /unitMultiPersist/{name}           1418ms (unitary persist and flush 1000 records)
 /persistWithPagination             1418ms (paginate 1000 records by 10 and unitary persist and flush every records)
 /massFindOne                       169ms  (1000 findOne)
+/redisPersist                      16ms (persist 100 keys)
+/redisGet                          5ms (get 100 keys)
+/redisDel                          14ms (del 100 keys)
 ```
