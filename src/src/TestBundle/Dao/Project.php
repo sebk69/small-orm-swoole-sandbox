@@ -16,11 +16,10 @@ class Project extends AbstractDao
         ;
     }
 
-    public function findPaginated()
+    public function findPaginated($page = 1, $pageSize = 25)
     {
         $query = $this->createQueryBuilder("project");
-        $query->innerJoin("project", "user");
-        $query->paginate(1, 10);
+        $query->paginate($page, $pageSize);
         return $this->getResult($query);
     }
 }

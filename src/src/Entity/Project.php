@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Project
  *
  * @ORM\Table(name="project", indexes={@ORM\Index(name="fk_project_1_idx", columns={"user_id"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\ProjectRepository")
  */
 class Project implements \JsonSerializable
 {
@@ -26,7 +26,7 @@ class Project implements \JsonSerializable
      *
      * @ORM\Column(name="name", type="string", length=45, nullable=false)
      */
-    private $name;
+    public $name;
 
     /**
      * @var \User
@@ -36,7 +36,7 @@ class Project implements \JsonSerializable
      *   @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      * })
      */
-    private $user;
+    public $user;
 
     public function getUser()
     {
