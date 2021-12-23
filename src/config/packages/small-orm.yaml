@@ -7,6 +7,13 @@ sebk_small_orm:
       encoding: utf8
       user:     root
       password: dev
+    command_line:
+      type: mysql
+      host: db
+      database: test
+      encoding: utf8
+      user:     root
+      password: dev
     redis:
       type: swoole-redis
       host: redis
@@ -19,6 +26,10 @@ sebk_small_orm:
     TestBundle:
       connections:
         default:
+          dao_namespace: App\TestBundle\Dao
+          model_namespace: App\TestBundle\Model
+          validator_namespace: App\TestBundle\Validator
+        command-line:
           dao_namespace: App\TestBundle\Dao
           model_namespace: App\TestBundle\Model
           validator_namespace: App\TestBundle\Validator

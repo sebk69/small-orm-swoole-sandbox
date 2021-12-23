@@ -8,7 +8,6 @@ use Sebk\SmallOrmCore\Dao\Model;
  * @method setId($value)
  * @method getName()
  * @method setName($value)
- * @method \App\TestBundle\Model\Resource[] getProjects()
  */
 class User extends Model
 {

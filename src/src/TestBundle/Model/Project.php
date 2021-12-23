@@ -10,6 +10,7 @@ use Sebk\SmallOrmCore\Dao\Model;
  * @method setUserId($value)
  * @method getName()
  * @method setName($value)
+ * @method \App\TestBundle\Model\User getUser()
  */
 class Project extends Model
 {

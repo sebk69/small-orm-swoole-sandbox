@@ -11,7 +11,6 @@ class User extends AbstractDao
             ->setModelName("User")
             ->addPrimaryKey("id", "id")
             ->addField("name", "name")
-            ->addToMany("projects", ["id" => "userId"], "Resource")
         ;
     }
 }

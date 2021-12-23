@@ -283,196 +283,62 @@ class Test extends AbstractController
     }
 
     /**
-     * Test average : 261ms
-     * @Route("/doctrine/multiPersist")
-     * @param Dao $daoFactory
-     * @return Response
-     * @throws \ReflectionException
-     * @throws \Sebk\SmallOrmCore\Dao\DaoException
-     * @throws \Sebk\SmallOrmCore\Factory\ConfigurationException
-     * @throws \Sebk\SmallOrmCore\Factory\DaoNotFoundException
-     */
-    public function multiPersistDoctrine(ManagerRegistry $managerRegistry)
-    {
-        // Get repo
-        $repo = $managerRegistry->getRepository(Project::class);
-
-        // Get projects
-        $result = $repo->findAll();
-
-        // Rename them
-        $managerRegistry->getConnection()->beginTransaction();
-        foreach ($result as $entity) {
-            $entity->name = "oups";
-            $managerRegistry->getManager()->persist($entity);
-        }
-
-        // Flush
-        $managerRegistry->getManager()->flush();
-
-        // Delete them (without flushing them)
-        foreach ($result as $entity) {
-            $managerRegistry->getManager()->remove($entity);
-        }
-
-        // Rollback (flushed operations or not)
-        $managerRegistry->getConnection()->rollBack();
-
-        // Rename them in good practice
-        $managerRegistry->getConnection()->beginTransaction();
-        foreach ($result as $entity) {
-            $entity->name = "renamed : " . rand(1, 10000);
-            $managerRegistry->getManager()->persist($entity);
-        }
-        $managerRegistry->getManager()->flush();
-        $managerRegistry->getConnection()->commit();
-
-        return new Response("That's done !");
-    }
-
-
-    /**
-     * Test average : 5ms
-     * @Route("/doctrine/createProject/{name}")
-     * @param $name
-     * @param Dao $daoFactory
-     * @return JsonResponse
-     * @throws \ReflectionException
-     * @throws \Sebk\SmallOrmCore\Factory\ConfigurationException
-     * @throws \Sebk\SmallOrmCore\Factory\DaoNotFoundException
-     */
-    public function createProjectDoctrine($name, ManagerRegistry $managerRegistry)
-    {
-        // Get repo
-        $repo = $managerRegistry->getRepository(Project::class);
-
-        // Create user if not exists
-        try {
-            $user =  $managerRegistry->getRepository(User::class)->findOneBy(["id" => 1]);
-        } catch (DaoEmptyException $e) {
-            /** @var \App\TestBundle\Model\User $user */
-            $user = new User();
-            $user->setName("John Do");
-            $managerRegistry->getManager()->persist($user);
-        }
-
-        // Create 100 projects for user
-        $managerRegistry->getConnection()->beginTransaction();
-        for($i = 0; $i < 100; $i++) {
-            $model = new Project();
-            $model->user = $user;
-            $model->name = $name . " " . rand(1, 10000);
-            $managerRegistry->getManager()->persist($model);
-        }
-        $managerRegistry->getConnection()->commit();
-
-        // Return last project
-        return new JsonResponse($model);
-    }
-
-    /**
-     * Test on 1000 : 3ms
-     * @Route("/doctrine/deleteProjects")
+     * @Route("persistTests")
      * @param Dao $daoFactory
      * @return void
      * @throws \ReflectionException
-     * @throws \Sebk\SmallOrmCore\Dao\DaoException
      * @throws \Sebk\SmallOrmCore\Factory\ConfigurationException
      * @throws \Sebk\SmallOrmCore\Factory\DaoNotFoundException
      */
-    public function deleteProjectsDoctrine(ManagerRegistry $managerRegistry)
+    public function testTypePersist(Dao $daoFactory)
     {
-        // Get repo
-        $repo = $managerRegistry->getRepository(Project::class);
+        /** @var \App\TestBundle\Dao\Test $dao */
+        $dao = $daoFactory->get("TestBundle", "Test");
 
-        // Get all projects
-        $projects = $repo->findBy([]);
+        /** @var \App\TestBundle\Model\Test $test */
+        $test = $dao->newModel();
 
-        // Delete all
-        foreach($projects as $project) {
-            /** @var \App\TestBundle\Model\Resource $model */
-            $managerRegistry->getManager()->remove($project);
-        }
+        $test->setBigint(1);
+        $test->setChar("test");
+        $test->setDate(new \DateTime());
+        $test->setDatetime(new \DateTime());
+        $test->setDecimal(1.21);
+        $test->setDouble(1);
+        $test->setFloat(1.21);
+        $test->setJson(json_encode(["test" => 1, "test2" => ""]));
+        $test->setLongtext("test");
+        $test->setMediumint(1);
+        $test->setMediumtext(1);
+        $test->setNchar("test");
+        $test->setNvarchar("test");
+        $test->setReal(1);
+        $test->setTestcol(1);
+        $test->setTestcol1("test");
+        $test->setVarchar("test");
+        $test->setSmallint(1);
+        $test->setTinyint(1);
+        $test->setTinytext("test");
+        $test->setBoolean(true);
 
-        // Flush and close
-        $managerRegistry->getManager()->flush();
+        $test->persist();
 
-        return new Response("That's done !");
+        return new Response("Done !");
     }
 
     /**
-     * Test average : 4030ms
-     * Rename projects and return modified models
-     * @Route("/doctrine/unitMultiPersist/{name}")
-     * @param $name
+     * @Route("getTests")
      * @param Dao $daoFactory
      * @return JsonResponse
      * @throws \ReflectionException
      * @throws \Sebk\SmallOrmCore\Factory\ConfigurationException
      * @throws \Sebk\SmallOrmCore\Factory\DaoNotFoundException
      */
-    public function unitMultiPersistDoctrine($name, ManagerRegistry $managerRegistry)
+    public function getTests(Dao $daoFactory)
     {
-        // Get dao
-        $repo = $managerRegistry->getRepository(Project::class);
+        /** @var \App\TestBundle\Dao\Test $dao */
+        $dao = $daoFactory->get("TestBundle", "Test");
 
-        // Get all projects
-        $projects = $repo->findBy([]);
-
-        foreach ($projects as $project) {
-            $project->name = $name . rand(1, 10000);
-            $managerRegistry->getManager()->persist($project);
-            $managerRegistry->getManager()->flush();
-        }
-
-        return new JsonResponse($projects);
+        return new JsonResponse($dao->findBy([]));
     }
-
-    /**
-     * Test average : 2506ms
-     * @Route("/doctrine/persistWithPagination")
-     * @param Dao $daoFactory
-     * @return Response
-     * @throws \ReflectionException
-     * @throws \Sebk\SmallOrmCore\Dao\DaoException
-     * @throws \Sebk\SmallOrmCore\Factory\ConfigurationException
-     * @throws \Sebk\SmallOrmCore\Factory\DaoNotFoundException
-     */
-    public function persistWithPaginationDoctrine(ManagerRegistry $managerRegistry)
-    {
-        /** @var \App\TestBundle\Dao\Resource $dao */
-        $repo = $managerRegistry->getRepository(Project::class);
-
-        $page = 1;
-        while ($result = $repo->listPaginated($page, 10)) {
-            foreach ($result as $project) {
-                $project->name = "test " . rand(1, 10000);
-                $managerRegistry->getManager()->persist($project);
-                $managerRegistry->getManager()->flush();
-            }
-            $page++;
-        }
-
-        return new Response("That's done !");
-    }
-
-    /**
-     * Test average : 163ms
-     * @Route("/doctrine/massFindOne")
-     * @param ManagerRegistry $managerRegistry
-     * @return Response
-     */
-    public function massFindOneDoctrine(ManagerRegistry $managerRegistry)
-    {
-        /** @var \App\TestBundle\Dao\Resource $dao */
-        $repo = $managerRegistry->getRepository(User::class);
-
-        for($i = 0; $i < 1000; $i++) {
-            $repo->findOneById(1);
-        }
-
-        return new Response("That's done !");
-    }
-
 
 }
