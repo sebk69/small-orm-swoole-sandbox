@@ -6,8 +6,8 @@ ARG uid
 ARG timezone
 
 # install swoole
-RUN pecl install openswoole
-RUN docker-php-ext-enable openswoole
+RUN pecl install swoole
+RUN docker-php-ext-enable swoole
 
 # install redis
 RUN pecl install redis

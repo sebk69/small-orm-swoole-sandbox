@@ -127,6 +127,9 @@
     "sebk/small-orm-core": {
         "version": "1.7"
     },
+    "sebk/small-orm-forms": {
+        "version": "dev-master"
+    },
     "sebk/small-orm-swoole": {
         "version": "dev-master"
     },
