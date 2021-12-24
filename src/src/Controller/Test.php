@@ -305,7 +305,7 @@ class Test extends AbstractController
         $test->setDecimal(1.21);
         $test->setDouble(1);
         $test->setFloat(1.21);
-        $test->setJson(json_encode(["test" => 1, "test2" => ""]));
+        $test->setJson(["test" => 1, "test2" => ""]);
         $test->setLongtext("test");
         $test->setMediumint(1);
         $test->setMediumtext(1);
