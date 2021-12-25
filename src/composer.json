@@ -15,7 +15,7 @@
         "k911/swoole-bundle": "^0.10.0",
         "phpdocumentor/reflection-docblock": "^5.3",
         "phpstan/phpdoc-parser": "^1.2",
-        "sebk/small-orm-bundle": "^2.1",
+        "sebk/small-orm-bundle": "dev-master",
         "sebk/small-orm-swoole": "dev-master",
         "sebk/small-orm-forms": "dev-master",
         "sensio/framework-extra-bundle": "^6.2",

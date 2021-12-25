@@ -9,8 +9,10 @@ use Doctrine\Persistence\ManagerRegistry;
 use Sebk\SmallOrmCore\Dao\DaoEmptyException;
 use Sebk\SmallOrmCore\Dao\PersistThread;
 use Sebk\SmallOrmCore\Factory\Dao;
+use Sebk\SmallOrmForms\Form\FormModel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -326,19 +328,54 @@ class Test extends AbstractController
     }
 
     /**
-     * @Route("getTests")
+     * @Route("getTest/{id}")
      * @param Dao $daoFactory
      * @return JsonResponse
      * @throws \ReflectionException
      * @throws \Sebk\SmallOrmCore\Factory\ConfigurationException
      * @throws \Sebk\SmallOrmCore\Factory\DaoNotFoundException
      */
-    public function getTests(Dao $daoFactory)
+    public function getTest($id, Dao $daoFactory)
     {
         /** @var \App\TestBundle\Dao\Test $dao */
         $dao = $daoFactory->get("TestBundle", "Test");
 
-        return new JsonResponse($dao->findBy([]));
+        return new JsonResponse($dao->findBy(["int" => $id]));
+    }
+
+    /**
+     * Test form class with all types
+     * @Route("testForm/{id}", methods={"POST"})
+     * @param Dao $daoFactory
+     * @param Request $request
+     * @return JsonResponse
+     * @throws DaoEmptyException
+     * @throws \ReflectionException
+     * @throws \Sebk\SmallOrmCore\Dao\DaoException
+     * @throws \Sebk\SmallOrmCore\Factory\ConfigurationException
+     * @throws \Sebk\SmallOrmCore\Factory\DaoNotFoundException
+     * @throws \Sebk\SmallOrmForms\Form\FieldException
+     * @throws \Sebk\SmallOrmForms\Form\FieldNotFoundException
+     * @throws \Sebk\SmallOrmForms\Type\TypeNotFoundException
+     */
+    public function testForm($id, Dao $daoFactory, Request $request)
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $dao = $daoFactory->get("TestBundle", "Test");
+
+        $model = $dao->findOneBy(["int" => $id]);
+
+        $form = (new FormModel())
+            ->fillFromModel($model)
+            ->fillFromArray($data)
+        ;
+
+        $model = $form->fillModel();
+
+        $model->persist();
+
+        return new JsonResponse($model);
     }
 
 }

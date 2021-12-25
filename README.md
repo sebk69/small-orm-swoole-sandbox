@@ -25,22 +25,19 @@ Here are routes :
  ----------------------------------- -------- -------- ------ ----------------------------------- 
   Name                                Method   Scheme   Host   Path                               
  ----------------------------------- -------- -------- ------ ----------------------------------- 
-  app_test_multipersist                    ANY      ANY      ANY    /multiPersist                      
-  app_test_createproject                   ANY      ANY      ANY    /createProject/{name}              
-  app_test_deleteprojects                  ANY      ANY      ANY    /deleteProjects                    
-  app_test_unitmultipersist                ANY      ANY      ANY    /unitMultiPersist/{name}           
-  app_test_persistwithpagination           ANY      ANY      ANY    /persistWithPagination             
-  app_test_massfindone                     ANY      ANY      ANY    /massFindOne                       
-  app_test_redispersist                    ANY      ANY      ANY    /redisPersist                      
-  app_test_redisget                        ANY      ANY      ANY    /redisGet                          
-  app_test_redisdel                        ANY      ANY      ANY    /redisDel                          
-  app_test_multipersistdoctrine            ANY      ANY      ANY    /doctrine/multiPersist             
-  app_test_createprojectdoctrine           ANY      ANY      ANY    /doctrine/createProject/{name}     
-  app_test_deleteprojectsdoctrine          ANY      ANY      ANY    /doctrine/deleteProjects           
-  app_test_unitmultipersistdoctrine        ANY      ANY      ANY    /doctrine/unitMultiPersist/{name}  
-  app_test_persistwithpaginationdoctrine   ANY      ANY      ANY    /doctrine/persistWithPagination    
-  app_test_massfindonedoctrine             ANY      ANY      ANY    /doctrine/massFindOne              
-  _preview_error                           ANY      ANY      ANY    /_error/{code}.{_format}           
+  app_test_multipersist            ANY      ANY      ANY    /multiPersist             
+  app_test_createproject           ANY      ANY      ANY    /createProject/{name}     
+  app_test_deleteprojects          ANY      ANY      ANY    /deleteProjects           
+  app_test_unitmultipersist        ANY      ANY      ANY    /unitMultiPersist/{name}  
+  app_test_persistwithpagination   ANY      ANY      ANY    /persistWithPagination    
+  app_test_massfindone             ANY      ANY      ANY    /massFindOne              
+  app_test_redispersist            ANY      ANY      ANY    /redisPersist             
+  app_test_redisget                ANY      ANY      ANY    /redisGet                 
+  app_test_redisdel                ANY      ANY      ANY    /redisDel                 
+  app_test_testtypepersist         ANY      ANY      ANY    /persistTests             
+  app_test_gettest                 ANY      ANY      ANY    /getTest/{id}             
+  app_test_testform                POST     ANY      ANY    /testForm/{id}            
+  _preview_error                   ANY      ANY      ANY    /_error/{code}.{_format}  
  ----------------------------------- -------- -------- ------ -----------------------------------
  ```
 
@@ -49,6 +46,8 @@ Here are routes :
 This is an average time for 100 tests in same conditions and swoole instance.
 
 ```
+/getTest/{id}                      2ms (Get one record)
+/formTest/{id}                     3ms (Update a record with form validation)
 /multiPersist                      129ms (transactional persist of 1000 records)
 /createProject/{name}              16ms (create 100 models and persist)
 /deleteProjects                    1320ms (delete 1000 records)

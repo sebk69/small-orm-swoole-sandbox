@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f82afe611509c1f19fe6ef11a9b4c9cf",
+    "content-hash": "dcdaf0495e68044eaf54b37b8d717592",
     "packages": [
         {
             "name": "beberlei/assert",
@@ -2170,7 +2170,7 @@
         },
         {
             "name": "sebk/small-orm-bundle",
-            "version": "2.4",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebk69/SebkSmallOrmBundle.git",
@@ -2185,6 +2185,7 @@
             "require": {
                 "sebk/small-orm-core": "1.*"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -5590,6 +5591,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "sebk/small-orm-bundle": 20,
         "sebk/small-orm-swoole": 20,
         "sebk/small-orm-forms": 20
     },
