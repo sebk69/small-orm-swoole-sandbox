@@ -7,7 +7,5 @@ return [
     Sebk\SmallOrmBundle\SebkSmallOrmBundle::class => ['all' => true],
     App\TestBundle\TestBundle::class => ['all' => true],
     App\RedisBundle\RedisBundle::class => ['all' => true],
-    Doctrine\Bundle\DoctrineBundle\DoctrineBundle::class => ['all' => true],
-    Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle::class => ['all' => true],
     Symfony\Bundle\MakerBundle\MakerBundle::class => ['dev' => true],
 ];

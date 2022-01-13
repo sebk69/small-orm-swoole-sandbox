@@ -8,7 +8,7 @@ class Project extends AbstractDao
     protected function build()
     {
         $this->setDbTableName("project")
-            ->setModelName("Resource")
+            ->setModelName("Project")
             ->addPrimaryKey("id", "id")
             ->addField("user_id", "userId")
             ->addField("name", "name")

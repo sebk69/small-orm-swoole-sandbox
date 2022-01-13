@@ -20,6 +20,31 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class Test extends AbstractController
 {
+
+    /**
+     * @Route("/userCreate")
+     * @param Dao $daoFactory
+     * @return JsonResponse
+     * @throws \ReflectionException
+     * @throws \Sebk\SmallOrmCore\Factory\ConfigurationException
+     * @throws \Sebk\SmallOrmCore\Factory\DaoNotFoundException
+     */
+    public function createUser(Dao $daoFactory): JsonResponse
+    {
+        // Get dao
+        $dao = $daoFactory->get("TestBundle", "User");
+
+        // Create model
+        /** @var \App\TestBundle\Model\User $model */
+        $model = $dao->newModel();
+        $model->setName("Test user " . rand(1, 10000));
+
+        // persist
+        $model->persist();
+
+        return new JsonResponse("That's done !");
+    }
+
     /**
      * Test average : 168ms
      * @Route("/multiPersist")
@@ -33,7 +58,7 @@ class Test extends AbstractController
     public function multiPersist(Dao $daoFactory)
     {
         // Get dao
-        $dao = $daoFactory->get("TestBundle", "Resource");
+        $dao = $daoFactory->get("TestBundle", "Project");
 
         // Get projects
         $result = $dao->findBy([]);
@@ -68,7 +93,7 @@ class Test extends AbstractController
     public function createProject($name, Dao $daoFactory)
     {
         // Get dao
-        $dao = $daoFactory->get("TestBundle", "Resource");
+        $dao = $daoFactory->get("TestBundle", "Project");
 
         // Create user if not exists
         try {
@@ -88,7 +113,7 @@ class Test extends AbstractController
         $thread->setFlushOnInsert();
         $models = [];
         for($i = 0; $i < 100; $i++) {
-            /** @var \App\TestBundle\Model\Resource $model */
+            /** @var \App\TestBundle\Model\Project $model */
             $model = $dao->newModel();
             $model->setUserId(1);
             $model->setName($name . " " . rand(1, 10000));
@@ -122,7 +147,7 @@ class Test extends AbstractController
     public function deleteProjects(Dao $daoFactory)
     {
         // Get dao
-        $dao = $daoFactory->get("TestBundle", "Resource");
+        $dao = $daoFactory->get("TestBundle", "Project");
 
         // Get all projects
         $projects = $dao->findBy([]);
@@ -132,7 +157,7 @@ class Test extends AbstractController
 
         // Delete all
         foreach($projects as $project) {
-            /** @var \App\TestBundle\Model\Resource $model */
+            /** @var \App\TestBundle\Model\Project $model */
             $thread->pushDelete($project);
         }
 
@@ -157,7 +182,7 @@ class Test extends AbstractController
     public function unitMultiPersist($name, Dao $daoFactory)
     {
         // Get dao
-        $dao = $daoFactory->get("TestBundle", "Resource");
+        $dao = $daoFactory->get("TestBundle", "Project");
 
         // Get all projects
         $projects = $dao->findBy([]);
@@ -184,8 +209,8 @@ class Test extends AbstractController
      */
     public function persistWithPagination(Dao $daoFactory)
     {
-        /** @var \App\TestBundle\Dao\Resource $dao */
-        $dao = $daoFactory->get("TestBundle", "Resource");
+        /** @var \App\TestBundle\Dao\Project $dao */
+        $dao = $daoFactory->get("TestBundle", "Project");
 
         $page = 1;
         $thread = new PersistThread($dao->getConnection());
@@ -234,7 +259,7 @@ class Test extends AbstractController
     public function redisPersist(Dao $daoFactory)
     {
         /** @var Resource $dao */
-        $dao = $daoFactory->get("RedisBundle", "Resource");
+        $dao = $daoFactory->get("RedisBundle", "Project");
 
         for ($i = 0; $i < 100; $i++) {
             $model = $dao->newModel();

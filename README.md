@@ -13,6 +13,13 @@ git clone git@github.com:sebk69/small-orm-swoole-sandbox.git
 # use docker-compose to build containers
 cd small-orm-swoole-sandbox
 docker-compose up -d --build
+
+# Install vendor
+cd scripts
+./composer install
+
+# Execute database layers
+./console sebk:small-orm:layers-execute
 ```
 
 ## Usage

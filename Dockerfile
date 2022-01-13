@@ -29,7 +29,7 @@ RUN cp /usr/share/zoneinfo/$timezone /etc/localtime \
     && echo "[Date]\ndate.timezone=$timezone" > /usr/local/etc/php/conf.d/timezone.ini
 
 # Install packages
-RUN apt-get update && apt-get install -y sudo wget git && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y sudo wget git vim && rm -rf /var/lib/apt/lists/*
 
 # Setup app
 RUN chown www-data:www-data /var/www
