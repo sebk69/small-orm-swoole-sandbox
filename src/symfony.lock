@@ -59,6 +59,9 @@
     "psr/log": {
         "version": "2.0.0"
     },
+    "sebk/small-logger-bundle": {
+        "version": "dev-master"
+    },
     "sebk/small-orm-bundle": {
         "version": "2.1"
     },

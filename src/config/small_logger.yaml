@@ -1,0 +1,10 @@
+small_logger:
+  formatters:
+    custom_formatter: App\Log\Formatter\CustomFormatter
+  outputs:
+    custom_output: App\Log\Output\CustomOutput
+  streams:
+    custom:
+      class: App\Log\Stream\CustomStream
+      formatter: custom_formatter
+      output: custom_output
