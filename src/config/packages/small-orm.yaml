@@ -1,41 +1,25 @@
 sebk_small_orm:
   connections:
     default:
-      type: swoole-mysql
-      host: db
-      database: test
-      encoding: utf8
-      user:     root
-      password: dev
-    command_line:
       type: mysql
       host: db
       database: test
       encoding: utf8
       user:     root
       password: dev
-    redis:
-      type: swoole-redis
-      host: redis
-      database: "not-used"
-      encoding: "not-used"
-      user:     "not-used"
-      password: "not-used"
 
-  bundles:
-    TestBundle:
-      connections:
-        default:
-          dao_namespace: App\TestBundle\Dao
-          model_namespace: App\TestBundle\Model
-          validator_namespace: App\TestBundle\Validator
-        command-line:
-          dao_namespace: App\TestBundle\Dao
-          model_namespace: App\TestBundle\Model
-          validator_namespace: App\TestBundle\Validator
-    RedisBundle:
-      connections:
-        redis:
-          dao_namespace: App\RedisBundle\Dao
-          model_namespace: App\RedisBundle\Model
-          validator_namespace: App\RedisBundle\Validator
+  generator:
+    folders:
+      App\TestBundle: src/TestBundle
+      App\RedisBundle: src/RedisBundle
+      App\Try: src/Try
+    selectors:
+      test:
+        dao_namespace: App\TestBundle\Dao
+        model_namespace: App\TestBundle\Model
+      redis:
+        dao_namespace: App\RedisBundle\Dao
+        model_namespace: App\RedisBundle\Model
+      try:
+        dao_namespace: App\Try\Dao
+        model_namespace: App\Try\Model

@@ -6,7 +6,8 @@ ARG uid
 ARG timezone
 
 # install swoole
-RUN pecl install swoole
+RUN apt-get update && apt-get install -y libssl-dev zlib1g-dev
+RUN pecl install --configureoptions 'enable-openssl="yes"' swoole
 RUN docker-php-ext-enable swoole
 
 # install redis

@@ -9,7 +9,7 @@ class Test extends AbstractDao
     protected function build()
     {
         $this->setDbTableName("test")
-            ->setModelName("Test")
+            ->setModelClass(\App\TestBundle\Model\Test::class)
             ->addPrimaryKey("int", "int")
             ->addField("varchar", "varchar", null, Field::TYPE_STRING)
             ->addField("datetime", "datetime", null, Field::TYPE_DATETIME)

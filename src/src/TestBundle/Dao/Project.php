@@ -8,7 +8,9 @@ class Project extends AbstractDao
     protected function build()
     {
         $this->setDbTableName("project")
-            ->setModelName("Project")
+            ->setConnectionName('default')
+            ->setModelClass(\App\TestBundle\Model\Project::class)
+            ->setValidatorClass(\App\TestBundle\Validator\Project::class)
             ->addPrimaryKey("id", "id")
             ->addField("user_id", "userId")
             ->addField("name", "name")

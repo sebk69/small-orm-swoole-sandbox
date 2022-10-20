@@ -8,7 +8,7 @@ class Resource extends AbstractRedisDao
     protected function build()
     {
         $this->setDbTableName("resource")
-            ->setModelName("Resource")
+            ->setModelClass(\App\RedisBundle\Model\Resource::class)
             ->addField("id", "id")
             ->addField("name", "name")
         ;

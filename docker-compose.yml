@@ -2,14 +2,12 @@ version: "3.5"
 
 services:
   app:
-    #image: "${REGISTRY:-docker.io}/${NAMESPACE:-k911}/${IMAGE_NAME:-swoole-bundle-demo}:${IMAGE_TAG:-local}"
     container_name: swoole-test
     build:
       context: .
       args:
         timezone: Europe/Paris
         uid: 1000
-    #env_file: .env
     environment:
       APP_ENV: dev
       HOST: 0.0.0.0
@@ -18,11 +16,8 @@ services:
       MONOLOG_DEPRECATIONS_STREAM_PATH: php://sterr
       SWOOLE_LOG_STREAM_PATH: /proc/self/fd/1
       DATABASE_URL: "mysql://root:dev@db:3306/test?serverVersion=8.0"
-      #API_HOST: 0.0.0.0
-      #API_PORT: 9200
     ports:
       - "9501:9501"
-      #- 9200:9200
     volumes:
       - ./src:/usr/src/app
   db:

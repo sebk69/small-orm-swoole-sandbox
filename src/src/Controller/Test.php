@@ -4,12 +4,16 @@ namespace App\Controller;
 
 use App\Entity\Project;
 use App\Entity\User;
+use App\RedisBundle\RedisBundle;
+use Sebk\SmallSwoolePatterns\Array\Map;
+use Sebk\SmallSwoolePatterns\Observable\Observable;
 use App\RedisBundle\Dao\Resource;
 use Doctrine\Persistence\ManagerRegistry;
 use Sebk\SmallOrmCore\Dao\DaoEmptyException;
 use Sebk\SmallOrmCore\Dao\PersistThread;
 use Sebk\SmallOrmCore\Factory\Dao;
 use Sebk\SmallOrmForms\Form\FormModel;
+use Swoole\Coroutine;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,6 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
+use function Co\run;
 
 class Test extends AbstractController
 {
@@ -32,7 +37,7 @@ class Test extends AbstractController
     public function createUser(Dao $daoFactory): JsonResponse
     {
         // Get dao
-        $dao = $daoFactory->get("TestBundle", "User");
+        $dao = $daoFactory->get(\App\TestBundle\Dao\User::class);
 
         // Create model
         /** @var \App\TestBundle\Model\User $model */
@@ -58,7 +63,7 @@ class Test extends AbstractController
     public function multiPersist(Dao $daoFactory)
     {
         // Get dao
-        $dao = $daoFactory->get("TestBundle", "Project");
+        $dao = $daoFactory->get(\App\TestBundle\Dao\Project::class);
 
         // Get projects
         $result = $dao->findBy([]);
@@ -93,14 +98,14 @@ class Test extends AbstractController
     public function createProject($name, Dao $daoFactory)
     {
         // Get dao
-        $dao = $daoFactory->get("TestBundle", "Project");
+        $dao = $daoFactory->get(\App\TestBundle\Dao\Project::class);
 
         // Create user if not exists
         try {
-            $daoFactory->get("TestBundle", "User")->findOneBy(["id" => 1]);
+            $user = $daoFactory->get(\App\TestBundle\Dao\User::class)->findOneBy(["id" => 1]);
         } catch (DaoEmptyException $e) {
             /** @var \App\TestBundle\Model\User $user */
-            $user = $daoFactory->get("TestBundle", "User")->newModel();
+            $user = $daoFactory->get(\App\TestBundle\Model\User::class)->newModel();
             $user->setName("John Do");
             $user->persist();
         }
@@ -115,23 +120,45 @@ class Test extends AbstractController
         for($i = 0; $i < 100; $i++) {
             /** @var \App\TestBundle\Model\Project $model */
             $model = $dao->newModel();
-            $model->setUserId(1);
+            $model->setUser($user);
             $model->setName($name . " " . rand(1, 10000));
-            $thread->pushPersist($model);
-            $models[] = $model;
+            if ($model->getValidator()->validate()) {
+                $model->persistInThread($thread);
+                $models[] = $model;
+            }
         }
         $thread->commit();
-
-        foreach ($models as $model) {
-            $model->setName($model->getName() . " persisted");
-            $model->persist();
-        }
 
         // Close connection
         $thread->close();
 
         // Return last project
         return new JsonResponse($models);
+    }
+
+    /**
+     * @Route("/addProjectToUser")
+     * @param Dao $daoFactory
+     * @return JsonResponse
+     * @throws DaoEmptyException
+     * @throws \ReflectionException
+     * @throws \Sebk\SmallOrmCore\Dao\DaoException
+     * @throws \Sebk\SmallOrmCore\Factory\ConfigurationException
+     * @throws \Sebk\SmallOrmCore\Factory\DaoNotFoundException
+     */
+    public function addProjectToUser(Dao $daoFactory): JsonResponse
+    {
+        $user = $daoFactory->get(\App\TestBundle\Dao\User::class)->findOneBy(["id" => 1]);
+        $project = $daoFactory->get(\App\TestBundle\Dao\Project::class)
+            ->newModel()
+            ->setName("user1Project")
+        ;
+        $user->setProjects([
+            $project
+        ]);
+        $project->persist();
+
+        return new JsonResponse($user);
     }
 
     /**
@@ -147,7 +174,7 @@ class Test extends AbstractController
     public function deleteProjects(Dao $daoFactory)
     {
         // Get dao
-        $dao = $daoFactory->get("TestBundle", "Project");
+        $dao = $daoFactory->get(\App\TestBundle\Dao\Project::class);
 
         // Get all projects
         $projects = $dao->findBy([]);
@@ -182,7 +209,7 @@ class Test extends AbstractController
     public function unitMultiPersist($name, Dao $daoFactory)
     {
         // Get dao
-        $dao = $daoFactory->get("TestBundle", "Project");
+        $dao = $daoFactory->get(\App\TestBundle\Dao\Project::class);
 
         // Get all projects
         $projects = $dao->findBy([]);
@@ -198,6 +225,112 @@ class Test extends AbstractController
     }
 
     /**
+     * @Route("/testObservable")
+     * @param $name
+     * @param Dao $daoFactory
+     * @return JsonResponse
+     * @throws \ReflectionException
+     * @throws \Sebk\SmallOrmCore\Factory\ConfigurationException
+     * @throws \Sebk\SmallOrmCore\Factory\DaoNotFoundException
+     */
+    public function observerMultiPersist(Dao $daoFactory)
+    {
+        // Get dao
+        $dao = $daoFactory->get(\App\TestBundle\Dao\Project::class);
+
+        $findAllProjects = function ($dumpMessage) use($dao): array {
+            var_dump($dumpMessage);
+
+            for($i = 0; $i < 100; $i++) {
+                $result = $dao->findBy([]);
+            }
+
+            return $result;
+        };
+
+        $observable = (new Observable($findAllProjects))
+            ->subscribe(function(array $projects) {
+                (new Map($projects, function ($project) {
+                    $project->setName("name1" . rand(1, 10000));
+                    $project->persist();
+                }));
+            }, function(\Exception $e) {
+                echo 'Name1 Error : ' . $e->getMessage();
+            });
+
+        Coroutine\go(function() use($observable) {
+            $observable
+                ->run("name1")
+            ;
+        });
+
+        $observable->wait();
+
+        $observable2 = (new Observable($findAllProjects))
+            ->subscribe(function (array $projects) {
+                (new Map($projects, function ($project) {
+                    $project->setName("name2" . rand(1, 10000));
+                    $project->persist();
+                }));
+            }, function (\Exception $e) {
+                echo 'Name2 Error : ' . $e->getMessage();
+            });
+
+        Coroutine\go(function() use($observable2) {
+            $observable2
+                ->run("name2");
+        });
+
+        $observable2->wait();
+
+        return new JsonResponse();
+    }
+
+    /**
+     * @Route("/testObservableUrl")
+     * @param Dao $daoFactory
+     * @return JsonResponse
+     * @throws \App\Observable\ObservableAlreadyRanException
+     */
+    public function observerUrl(Dao $daoFactory)
+    {
+        $keys = function ($data): string {
+            var_dump("keys");
+
+            return (new Coroutine\Http\Client('www.yahoo.fr', 80, true))
+                ->get('/');
+        };
+
+        $accounting = function ($data): string {
+            var_dump("accounting");
+
+            return (new Coroutine\Http\Client('www.google.com', 80, true))
+                ->get('/');
+        };
+
+        $observable = (new Observable($keys))
+            ->subscribe(function(string $html) {
+                var_dump('finished keys');
+            }, function(\Exception $e) {
+                echo 'Keys Error : ' . $e->getMessage();
+            })
+            ->run("keys")
+        ;
+
+        $observable2 = (new Observable($accounting))
+            ->subscribe(function(string $html) {
+                var_dump("finished accounting");
+            }, function(\Exception $e) {
+                echo 'Accounting Error : ' . $e->getMessage();
+            })
+            ->run("accounting")
+        ;
+
+        return new JsonResponse();
+    }
+
+
+    /**
      * Test average : 1418ms
      * @Route("/persistWithPagination")
      * @param Dao $daoFactory
@@ -210,16 +343,17 @@ class Test extends AbstractController
     public function persistWithPagination(Dao $daoFactory)
     {
         /** @var \App\TestBundle\Dao\Project $dao */
-        $dao = $daoFactory->get("TestBundle", "Project");
+        $dao = $daoFactory->get(\App\TestBundle\Dao\Project::class);
 
+        $run = [];
         $page = 1;
         $thread = new PersistThread($dao->getConnection());
         while ($result = $dao->findPaginated($page, 10)) {
             // Persist
-            \Swoole\Coroutine\map($result, function($project) use($thread) {
+            $run[] = (new Map($result, function($project) use($thread) {
                 $project->setName("test " . rand(1, 10000));
                 $project->persist();
-            });
+            }))->run();
             $page++;
         }
         $thread->close();
@@ -240,7 +374,7 @@ class Test extends AbstractController
      */
     public function massFindOne(Dao $daoFactory)
     {
-        $dao = $daoFactory->get("TestBundle", "User");
+        $dao = $daoFactory->get(\App\TestBundle\Dao\User::class);
         \Swoole\Coroutine\map(range(1, 1000), function ($i) use ($dao) {
             $dao->findOneBy(["id" => 1]);
         });
@@ -259,7 +393,7 @@ class Test extends AbstractController
     public function redisPersist(Dao $daoFactory)
     {
         /** @var Resource $dao */
-        $dao = $daoFactory->get("RedisBundle", "Project");
+        $dao = $daoFactory->get(Resource::class);
 
         for ($i = 0; $i < 100; $i++) {
             $model = $dao->newModel();
@@ -282,7 +416,7 @@ class Test extends AbstractController
     public function redisGet(Dao $daoFactory)
     {
         /** @var Resource $dao */
-        $dao = $daoFactory->get("RedisBundle", "Resource");
+        $dao = $daoFactory->get(Resource::class);
 
         $models = $dao->findBy(range(0, 99));
 
@@ -300,7 +434,7 @@ class Test extends AbstractController
     public function redisDel(Dao $daoFactory)
     {
         /** @var Resource $dao */
-        $dao = $daoFactory->get("RedisBundle", "Resource");
+        $dao = $daoFactory->get(Resource::class);
 
         for($i = 0; $i < 100; $i++) {
             $dao->getResult($dao->createDeleteBuilder()->del($i));
@@ -320,7 +454,7 @@ class Test extends AbstractController
     public function testTypePersist(Dao $daoFactory)
     {
         /** @var \App\TestBundle\Dao\Test $dao */
-        $dao = $daoFactory->get("TestBundle", "Test");
+        $dao = $daoFactory->get(\App\TestBundle\Dao\Test::class);
 
         /** @var \App\TestBundle\Model\Test $test */
         $test = $dao->newModel();
@@ -363,7 +497,7 @@ class Test extends AbstractController
     public function getTest($id, Dao $daoFactory)
     {
         /** @var \App\TestBundle\Dao\Test $dao */
-        $dao = $daoFactory->get("TestBundle", "Test");
+        $dao = $daoFactory->get(\App\TestBundle\Dao\Test::class);
 
         return new JsonResponse($dao->findBy(["int" => $id]));
     }
@@ -387,7 +521,7 @@ class Test extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        $dao = $daoFactory->get("TestBundle", "Test");
+        $dao = $daoFactory->get(\App\TestBundle\Dao\Test::class);
 
         $model = $dao->findOneBy(["int" => $id]);
 
