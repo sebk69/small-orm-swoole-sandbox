@@ -9,6 +9,9 @@ use Sebk\SmallSwoolePatterns\Array\Map;
 use Sebk\SmallSwoolePatterns\Observable\Observable;
 use App\RedisBundle\Dao\Resource;
 use Doctrine\Persistence\ManagerRegistry;
+use Sebk\SmallLogger\Contracts\LogInterface;
+use Sebk\SmallLogger\Log\BasicLog;
+use Sebk\SmallLoggerBundle\Service\Logger;
 use Sebk\SmallOrmCore\Dao\DaoEmptyException;
 use Sebk\SmallOrmCore\Dao\PersistThread;
 use Sebk\SmallOrmCore\Factory\Dao;
@@ -34,7 +37,7 @@ class Test extends AbstractController
      * @throws \Sebk\SmallOrmCore\Factory\ConfigurationException
      * @throws \Sebk\SmallOrmCore\Factory\DaoNotFoundException
      */
-    public function createUser(Dao $daoFactory): JsonResponse
+    public function createUser(Dao $daoFactory, Logger $logger): JsonResponse
     {
         // Get dao
         $dao = $daoFactory->get(\App\TestBundle\Dao\User::class);
@@ -47,11 +50,11 @@ class Test extends AbstractController
         // persist
         $model->persist();
 
+        $logger->log(new BasicLog(new \DateTime(), LogInterface::ERR_LEVEL_INFO, 'User ' . $model->getName() . ' created'));
         return new JsonResponse("That's done !");
     }
 
     /**
-     * Test average : 168ms
      * @Route("/multiPersist")
      * @param Dao $daoFactory
      * @return Response
@@ -60,7 +63,7 @@ class Test extends AbstractController
      * @throws \Sebk\SmallOrmCore\Factory\ConfigurationException
      * @throws \Sebk\SmallOrmCore\Factory\DaoNotFoundException
      */
-    public function multiPersist(Dao $daoFactory)
+    public function multiPersist(Dao $daoFactory, Logger $logger)
     {
         // Get dao
         $dao = $daoFactory->get(\App\TestBundle\Dao\Project::class);
@@ -75,9 +78,11 @@ class Test extends AbstractController
         $thread->startTransaction();
         foreach ($result as $model) {
             $model->setName("renamed : " . rand(1, 10000));
+
             $thread->pushPersist($model);
         }
         $thread->commit();
+        $logger->info('Ceci est un message');
 
         // Always close thread to release connection
         $thread->close();

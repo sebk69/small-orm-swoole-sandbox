@@ -23,3 +23,10 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    Sebk\SmallLogger\Contracts\SwitchLogicInterface:
+        class: Sebk\SmallLogger\SwitchLogic\DefaultFileSwitchLogic
+        arguments: ['/tmp/stdout.log', '/tmp/stderr.log']
+    App\Log\Formatter\CustomFormatter:
+        arguments: ['Y-m-d H:i:s']
+    App\Log\Output\CustomOutput:
+        arguments: ['@Symfony\Contracts\HttpClient\HttpClientInterface', '127.0.0.1', '8080', 'POST', '/']

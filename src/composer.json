@@ -15,6 +15,8 @@
         "sebk/small-orm-forms": "dev-master",
         "sebk/small-orm-swoole": "dev-master",
         "sebk/small-swoole-patterns": "*",
+        "sebk/small-logger": "dev-master",
+        "sebk/small-logger-bundle": "dev-master",
         "sensio/framework-extra-bundle": "^6.2",
         "symfony/console": "5.4.*",
         "symfony/dotenv": "5.4.*",
